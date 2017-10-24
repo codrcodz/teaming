@@ -1,0 +1,34 @@
+---
+- name: Install required NetworkManager libraries
+  yum:
+    name: "{{ item }}"
+    state: installed
+  with_items:
+    - NetworkManager-glib
+    - libsemanage-python
+    - policycoreutils-python
+
+- name: Create networking teams
+  template:
+    src: ifcfg-team.j2
+    dest: /etc/sysconfig/network-scripts/ifcfg-{{ item.team }}
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - "{{ teams }}"
+  notify:
+    - restart network service
+
+- name: Slave devices to teams
+  template:
+    src: ifcfg-team_slave.j2
+    dest: /etc/sysconfig/network-scripts/ifcfg-{{ item.1 }}
+    owner: root
+    group: root
+    mode: 0644
+  with_subelements:
+    - "{{ teams }}"
+    - slaves
+  notify:
+    - restart network service

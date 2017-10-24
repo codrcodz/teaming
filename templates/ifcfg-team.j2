@@ -1,0 +1,35 @@
+DEVICE={{ item.team }}
+BOOTPROTO=none
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_FAILURE_FATAL=no
+IPV6_ADDR_GEN_MODE=stable-privacy
+NAME={{ item.team }}
+ONBOOT={{ item.onboot }}
+DEVICETYPE=Team
+{% if item.mtu is defined %}
+MTU={{ item.mtu }}
+{% endif %}
+{% if nameservers.dns1 is defined %}
+DNS1={{ nameservers.dns1 }}
+{% endif %}
+{% if nameservers.dns2 is defined %}
+DNS2={{ nameservers.dns2 }}
+{% endif %}
+{% if nameservers.dns3 is defined %}
+DNS3={{ nameservers.dns3 }}
+{% endif %}
+{% if item.ip4 is defined %}
+IPADDR={{ item.ip4 }}
+{% endif %}
+{% if item.cidr is defined %}
+PREFIX={{ item.cidr }}
+{% endif %}
+{% if item.gw4 is defined %}
+GATEWAY={{ item.gw4 }}
+{% endif %}
+IPV6_PEERDNS=yes
+IPV6_PEERROUTES=yes

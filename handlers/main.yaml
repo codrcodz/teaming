@@ -1,0 +1,8 @@
+---
+- name: restart network service
+  systemd:
+    name: "{{ item }}"
+    state: restarted
+  with_items:
+    - NetworkManager
+    - network
