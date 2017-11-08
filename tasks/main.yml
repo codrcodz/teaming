@@ -32,3 +32,7 @@
     - slaves
   notify:
     - restart network service
+
+- name: Run any/all currently registered handlers
+  meta: flush_handlers
+  
