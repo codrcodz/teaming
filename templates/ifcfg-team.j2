@@ -8,13 +8,21 @@ IPV6_DEFROUTE=yes
 IPV6_FAILURE_FATAL=no
 IPV6_ADDR_GEN_MODE=stable-privacy
 NAME={{ item.team }}
+{% if item.onboot is defined %}
 ONBOOT={{ item.onboot }}
+{% else %}
+ONBOOT=yes
+{% endif %}
 DEVICETYPE=Team
 {% if item.mtu is defined %}
 MTU={{ item.mtu }}
+{% else %}
+MTU=1500
 {% endif %}
 {% if nameservers.dns1 is defined %}
 DNS1={{ nameservers.dns1 }}
+{% else %}
+DNS1=8.8.8.8
 {% endif %}
 {% if nameservers.dns2 is defined %}
 DNS2={{ nameservers.dns2 }}
@@ -33,3 +41,8 @@ GATEWAY={{ item.gw4 }}
 {% endif %}
 IPV6_PEERDNS=yes
 IPV6_PEERROUTES=yes
+{% if item.zone is defined %}
+ZONE={{ item.zone }}
+{% else %}
+ZONE=public
+{% endif %}
