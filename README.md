@@ -28,15 +28,14 @@ Role Variables
         type: "ethernet"          # This is usually "ethernet"
         slaves:                   # This is a list of the slaved devices
           - em1                   # Use * in /etc/sysconfig/network-scripts/ifcfg-*
-            - em1
-            - em2
-        - team: disabled          # Subsequent teams should use "- team: <team_name>"
-          onboot: "no"            # Disabled devices should be slaved to a disabled team
-          slaves:
-            - em3
-            - em4
-            - p2p1
-            - p2p2
+          - em2
+      - team: disabled            # Subsequent teams should use "- team: <team_name>"
+        onboot: "no"              # Disabled devices should be slaved to a disabled team
+        slaves:
+          - em3
+          - em4
+          - p2p1
+          - p2p2
     ...
 
 /path/to/your/host_vars/${your_host_name}:
@@ -56,13 +55,14 @@ None
 Example Playbook
 ----------------
 
-
+    ---
     - name: Set up teaming
       hosts: your_host_group_here
       become: True
 
       roles:
         - teaming
+    ...
 
 Notes
 -----
