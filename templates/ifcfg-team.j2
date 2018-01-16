@@ -39,6 +39,11 @@ PREFIX={{ item.cidr }}
 {% if item.gw4 is defined %}
 GATEWAY={{ item.gw4 }}
 {% endif %}
+{% if item.vlan is defined%}
+VLAN=yes
+{% else %}
+VLAN=no
+{% endif %}
 IPV6_PEERDNS=yes
 IPV6_PEERROUTES=yes
 {% if item.zone is defined %}
@@ -46,3 +51,9 @@ ZONE={{ item.zone }}
 {% else %}
 ZONE=public
 {% endif %}
+{% if item.team_config == 'lacp' %}
+TEAM_CONFIG='{"runner": {"name": "lacp", "active": true, "fast_rate": true, "tx_hash": ["eth", "ipv4", "ipv6"]},"link_watch":	{"name": "ethtool"}}'
+{% elif item.team_config == 'roundrobin' %}
+TEAM_CONFIG='{"runner": {"name": "roundrobin"}}'
+{% endif %}
+

@@ -26,6 +26,7 @@ Role Variables
         mtu: "9000"               # "9000" for jumbo packets; "1500" if undefined
         mode: "balance-rr"        # Set to "balance-rr" for balanced round robin
         type: "ethernet"          # This is usually "ethernet"
+        team_config: "lacp"       # Defines the team configuration to be used.
         slaves:                   # This is a list of the slaved devices
           - em1                   # Use * in /etc/sysconfig/network-scripts/ifcfg-*
           - em2
