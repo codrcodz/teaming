@@ -1,14 +1,51 @@
 ---
-- name: Install required NetworkManager libraries
+- name: Ensure all network-managing services and their libraries are installed
   yum:
     name: "{{ item }}"
     state: installed
   with_items:
+    - iproute
+    - initscripts
+    - NetworkManager
     - NetworkManager-glib
+    - NetworkManager-config-routing-rules
     - libsemanage-python
     - policycoreutils-python
 
-- name: Create networking teams
+- name: Ensure each enabled network-managing service is in appropriate state
+  systemd:
+    name: "{{ item }}"
+    enabled: yes
+    masked: no
+    state:  started
+  with_items:
+    - "{{ networking.services.enabled }}"
+  when: networking.services.enabled
+
+- name: Ensure each disabled network-managing service is in appropriate state
+  systemd:
+    name: "{{ item }}"
+    enabled: no
+    masked: yes
+    state: stopped
+  with_items:
+    - "{{ networking.services.disabled }}"
+  when: networking.services.disabled
+
+- name: Ensure simple (non-bridged and non-teamed) connections are configured
+  template:
+    src: ifcfg-simple.j2
+    dest: /etc/sysconfig/network-scripts/ifcfg-{{ item.simple }}
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - "{{ networking.simples }}"
+  notify:
+    - restart enabled network services
+  when: networking.simples
+
+- name: Ensure networking teams are configured
   template:
     src: ifcfg-team.j2
     dest: /etc/sysconfig/network-scripts/ifcfg-{{ item.team }}
@@ -16,11 +53,12 @@
     group: root
     mode: 0644
   with_items:
-    - "{{ teams }}"
+    - "{{ networking.teams }}"
   notify:
-    - restart network service
+    - restart enabled network services
+  when: networking.teams
 
-- name: Slave devices to teams
+- name: Ensure slave devices are slaved to teams
   template:
     src: ifcfg-team_slave.j2
     dest: /etc/sysconfig/network-scripts/ifcfg-{{ item.1 }}
@@ -28,10 +66,90 @@
     group: root
     mode: 0644
   with_subelements:
-    - "{{ teams }}"
+    - "{{ networking.teams }}"
     - slaves
   notify:
-    - restart network service
+    - restart enabled network services
+  when: networking.teams
+
+- name: Ensure bridged devices are configured
+  template:
+    src: ifcfg-bridge.j2
+    dest: /etc/sysconfig/networkscripts/ifcfg-{{ item.bridge }}
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - "{{ networking.bridges }}"
+  notify:
+    - restart enabled network services
+  when: networking.bridges
+
+- name: Ensure bridge-slaves are configured
+  template:
+    src: ifcfg-bridge_slave.j2
+    dest: /etc/sysconfig/network-scripts/ifcfg-{{ item.1 }}
+    owner: root
+    group: root
+    mode: 0644
+  with_subelements:
+    - "{{ networking.bridges }}"
+    - slaves
+  notify:
+    - restart enabled network services
+  when: networking.bridges
+
+- name: Ensure VLANs are configured
+  template:
+    src: ifcfg-vlan.j2
+    dest: /etc/sysconfig/networkscripts/ifcfg-{{ item.vlan }}
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - "{{ networking.vlans }}"
+  notify:
+    - restart enabled network services
+  when: networking.vlans
+
+- name: Ensure iproute2 tables are configured
+  lineinfile:
+    path: /etc/iproute2/rt_tables
+    create: yes
+    backup: yes
+    owner: root
+    group: root
+    mode: 0644
+    state: present
+    insertafter: EOF
+    regexp: "^{{ item.rt_number }}"
+    line: "{{ item.rt_number }}  {{ item.rt_alias }}"
+  with_items:
+    - "{{ networking.iproute2 }}"
+  when: networking.iproute2
+
+- name: Ensure iproute2 rules are configured
+  template:
+    src: rule-connection.j2
+    dest: /etc/sysconfig/network-scripts/rule-{{ item.connection }}
+    owner: root
+    group: root
+    chmod: 0644
+  with_items:
+    - "{{ networking.iproute2 }}"
+  when: networking.iproute2
+
+- name: Ensure iproute2 routes are configured
+  template:
+    src: route-connection.j2
+    dest: /etc/sysconfig/network-scripts/route-{{ item.connection }}
+    owner: root
+    group: root
+    chmod: 0644
+  with_items:
+    - "{{ networking.iproute2 }}"
+  when: networking.iproute2
+
 
 - name: Run any/all currently registered handlers
   meta: flush_handlers

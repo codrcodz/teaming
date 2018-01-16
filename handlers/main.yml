@@ -1,7 +1,8 @@
 ---
-- name: restart network service
+- name: restart enabled network services
   systemd:
     name: "{{ item }}"
     state: restarted
   with_items:
-    - NetworkManager
+    - "{{ networking.services.enabled }}"
+  when: networking.services.enabled
